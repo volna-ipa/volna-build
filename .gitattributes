@@ -1,0 +1,8 @@
+# Normalize line endings so the macOS CI runner always sees LF.
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.ipa binary
+*.xcuserstate binary

@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Real credentials and local reports
+Config/Secrets.xcconfig
+docs/soundcloud-api-report.json
+*.local.xcconfig
+
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved
