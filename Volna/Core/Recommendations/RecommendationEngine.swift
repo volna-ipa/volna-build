@@ -131,15 +131,24 @@ actor RecommendationEngine {
         return result
     }
 
+    /// Suffixes that may legitimately follow an artist handle on SoundCloud
+    /// or Deezer ("capsize" + "official").
+    private static let commonArtistSuffixes = [
+        "official", "music", "prod", "beats", "sound", "records", "record"
+    ]
+
     private func bestMatch(for seed: String, in artists: [Artist]) -> Artist? {
         let key = seed.handleKey
+        guard !key.isEmpty else { return nil }
         if let exact = artists.first(where: { $0.username.handleKey == key }) {
             return exact
         }
-        // Only accept a clearly related username. Picking the first fuzzy result
-        // would silently seed the feed with the wrong artist.
-        return artists.first(where: {
-            $0.username.handleKey.contains(key) || key.contains($0.username.handleKey)
+        // Accept only an obvious suffix, never a fuzzy "contains" hit: the
+        // free catalog would otherwise seed the feed with unrelated artists
+        // (for example a field recording called "Mountain Kishlak. Coturnix").
+        return artists.first(where: { artist in
+            let candidate = artist.username.handleKey
+            return Self.commonArtistSuffixes.contains(where: { candidate == key + $0 })
         })
     }
 
