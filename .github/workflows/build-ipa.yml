@@ -7,7 +7,9 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    # macos-15 arm64 runners are heavily oversubscribed; the Intel pool
+    # starts much faster and is fine for an unsigned archive.
+    runs-on: macos-15-intel
     timeout-minutes: 30
 
     steps:
