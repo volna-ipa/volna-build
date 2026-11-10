@@ -123,6 +123,8 @@ $lines.Add('/* End PBXFileReference section */')
 $lines.Add('')
 $lines.Add('/* Begin PBXGroup section */')
 
+$script:groupedIds = @{}
+
 function Emit-Group {
     param([string]$Id, [string]$Name, [string]$Path, [string[]]$Children, [bool]$IsRoot = $false)
     $pathPart = if ($Path) { "path = `"$Path`"; " } else { '' }
@@ -131,6 +133,7 @@ function Emit-Group {
     $lines.Add("			children = (")
     foreach ($child in $Children) {
         $lines.Add("				$child,")
+        $script:groupedIds[$child] = $true
     }
     $lines.Add('			);')
     $lines.Add("			$($pathPart)sourceTree = `"<group>`";")
@@ -161,7 +164,8 @@ Emit-Group $groupIds.core 'Core' 'Core' $coreChildren
 Emit-Group $groupIds.api 'API' 'API' @(
     $fileRefs['Core/API/APIError.swift'], $fileRefs['Core/API/AppConfiguration.swift'],
     $fileRefs['Core/API/CredentialsStore.swift'], $fileRefs['Core/API/KeychainStore.swift'],
-    $fileRefs['Core/API/RateLimiter.swift'], $fileRefs['Core/API/SoundCloudAPIClient.swift'],
+    $fileRefs['Core/API/PreviewCatalog.swift'], $fileRefs['Core/API/RateLimiter.swift'],
+    $fileRefs['Core/API/SoundCloudAPIClient.swift'],
     $fileRefs['Core/API/SoundCloudAuthService.swift']
 )
 Emit-Group $groupIds.models 'Models' 'Models' @(
@@ -201,6 +205,20 @@ Emit-Group $groupIds.web 'WebFallback' 'WebFallback' @($fileRefs['Features/WebFa
 Emit-Group $groupIds.resources 'Resources' 'Resources' $resourcesChildren
 Emit-Group $groupIds.config 'Config' 'Config' @($appConfigRefId, $secretsConfigRefId, $infoPlistRefId)
 Emit-Group $groupIds.products 'Products' '' @($productId)
+
+# Every Swift file must live in exactly one group. A file reference that is
+# not in any group resolves relative to the project root, and xcodebuild then
+# fails with "Build input file cannot be found".
+$missingRefs = @()
+foreach ($rel in $fileRefs.Keys) {
+    if (-not $script:groupedIds.ContainsKey($fileRefs[$rel])) {
+        $missingRefs += $rel
+    }
+}
+if ($missingRefs.Count -gt 0) {
+    throw "Swift files are not in any project group: $($missingRefs -join ', ')"
+}
+
 $lines.Add('/* End PBXGroup section */')
 
 # Native target

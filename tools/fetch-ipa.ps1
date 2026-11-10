@@ -11,7 +11,7 @@
     powershell -ExecutionPolicy Bypass -File tools/fetch-ipa.ps1
 #>
 param(
-    [string]$Repo = "volna-ipa/volna",
+    [string]$Repo = "volna-ipa/volna-build",
     [string]$Workflow = "build-ipa.yml",
     [string]$Artifact = "Volna-unsigned-ipa"
 )
